@@ -1,7 +1,6 @@
 steps:
   # ==============================================================================
   # 1. Build the Docker Image
-  #    Uses the specific Dockerfile in the current directory.
   # ==============================================================================
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Image'
@@ -24,9 +23,7 @@ steps:
       - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/$_IMAGE_NAME'
 
   # ==============================================================================
-  # 3. Deploy to Cloud Run (GPU Enabled)
-  #    Deploys the image with the specific GPU and concurrency settings required
-  #    for the video-tracker service.
+  # 3. Deploy to Cloud Run (GPU Enabled + Secret Manager)
   # ==============================================================================
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy to Cloud Run'
@@ -51,17 +48,18 @@ steps:
       - '1'
       - '--gpu-type'
       - 'nvidia-l4'
-      # Concurrency is set to 1 to ensure dedicated resources for the tracking state
       - '--concurrency' 
       - '1'
-      # --- Environment Variables ---
-      - '--set-env-vars'
-      - 'ROBOFLOW_API_KEY=$_ROBOFLOW_API_KEY'
+      # --- Secrets Configuration (NEW) ---
+      # syntax: ENV_VAR_NAME=SECRET_NAME:VERSION
+      - '--set-secrets'
+      - 'ROBOFLOW_API_KEY=roboflow-api-key:latest'
+      # --- Environment Variables (Non-sensitive) ---
       - '--set-env-vars'
       - 'GCS_BUCKET_NAME=$_GCS_BUCKET_NAME'
       - '--set-env-vars'
       - 'GCP_PROJECT_ID=$PROJECT_ID'
-      # --- SAM2 Model Paths (Matches Dockerfile) ---
+      # --- SAM2 Model Paths ---
       - '--set-env-vars'
       - 'SAM2_CHECKPOINT_PATH=/app/sam2_repo/checkpoints/sam2.1_hiera_large.pt'
       - '--set-env-vars'
@@ -71,16 +69,11 @@ images:
   - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/$_IMAGE_NAME:$COMMIT_SHA'
   - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/$_IMAGE_NAME:latest'
 
-options:
-  logging: CLOUD_LOGGING_ONLY
-
 substitutions:
-  # Default values (Overridable at trigger time)
   _REGION: us-central1
   _AR_HOSTNAME: us-central1-docker.pkg.dev
-  _AR_REPO: basketball-ai-repo  # You must create this Artifact Registry repo first
+  _AR_REPO: basketball-ai-repo
   _IMAGE_NAME: video-tracker
   _SERVICE_NAME: video-tracker
-  # User must provide these in the Cloud Build Trigger settings:
-  _ROBOFLOW_API_KEY: "PROVIDE_IN_TRIGGER_SETTINGS" 
+  # Removed _ROBOFLOW_API_KEY from here as it's no longer needed in build
   _GCS_BUCKET_NAME: "PROVIDE_IN_TRIGGER_SETTINGS"
