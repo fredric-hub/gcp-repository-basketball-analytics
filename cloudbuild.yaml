@@ -13,7 +13,7 @@ steps:
       - '.'
 
   # ==============================================================================
-  # 2. Push the Image to Artifact Registry
+  # 2. Push the Image to Artifact Registry.
   # ==============================================================================
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Push Image'
