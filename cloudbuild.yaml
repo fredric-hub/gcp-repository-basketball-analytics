@@ -69,6 +69,9 @@ images:
   - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/$_IMAGE_NAME:$COMMIT_SHA'
   - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/$_IMAGE_NAME:latest'
 
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 substitutions:
   _REGION: us-central1
   _AR_HOSTNAME: us-central1-docker.pkg.dev
