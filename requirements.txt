@@ -6,7 +6,6 @@ supervision==0.27.0
 inference-gpu==0.9.13
 transformers
 opencv-python-headless
-torch
 numpy
-# Roboflow Sports repo from the notebook
+# Removed 'torch' to use the base image's optimized version
 git+https://github.com/roboflow/sports.git@feat/basketball
